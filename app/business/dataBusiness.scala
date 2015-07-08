@@ -11,6 +11,7 @@ import models.DataInputFormat.DataStreamWriter
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Try, Success, Failure}
 import play.api.libs.iteratee.Iteratee
+import scala.collection.mutable.ListBuffer
 /**
  * Created by Moi on 30/06/2015.
  */
@@ -23,7 +24,7 @@ object dataBusiness {
     val ee = BSON.write(data)
     val future = collectionGround.insert(ee)
 
-    future.onComplete {
+    future onComplete {
       case Failure(e) => throw e
       case Success(writeResult) => {
         println(s"successfully inserted document: $writeResult")
@@ -33,15 +34,17 @@ object dataBusiness {
   }
 
   def findNear(x: Double, y: Double):Unit = {
+    val pointsToConsider : ListBuffer[geoDataFromMongo] = ListBuffer[geoDataFromMongo]()
     val query = BSONDocument("coordinates" -> BSONDocument("$geoWithin" -> BSONDocument("$center" -> BSONArray(BSONArray(x, y), BSONDouble(10050.0)))))
-
-    val e = collectionGround.
+    val futureRes = collectionGround.
       find(query).
-      cursor[BSONDocument].
-      enumerate().apply(Iteratee.foreach { doc =>
-      println(s"found ddocument: ${BSONDocument pretty doc}")
-      println(doc.as[geoDataFromMongo])
-    })
+      cursor[geoDataFromMongo].
+      collect[List]()
+
+    val out = futureRes.onComplete{
+      case Success(res) => { println(res) }
+      case _ => List[geoDataFromMongo]()
+    }
   }
 
   def environmentManager(data : DataInput): Unit ={
