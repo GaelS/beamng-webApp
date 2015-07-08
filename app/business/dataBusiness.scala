@@ -4,11 +4,13 @@ import models.DataInput
 import scala.concurrent.Future
 import play.api.libs.json._
 import reactivemongo.bson._
-import models.geoData
+import models._
+import models.DataInputFormat._
 import access.BaseAccess._
 import models.DataInputFormat.DataStreamWriter
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Try, Success, Failure}
+import play.api.libs.iteratee.Iteratee
 /**
  * Created by Moi on 30/06/2015.
  */
@@ -30,8 +32,16 @@ object dataBusiness {
 
   }
 
-  def getNearestPoints(pos :  Tuple3[Double,Double,Double]): Unit ={
+  def findNear(x: Double, y: Double):Unit = {
+    val query = BSONDocument("coordinates" -> BSONDocument("$geoWithin" -> BSONDocument("$center" -> BSONArray(BSONArray(x, y), BSONDouble(10050.0)))))
 
+    val e = collectionGround.
+      find(query).
+      cursor[BSONDocument].
+      enumerate().apply(Iteratee.foreach { doc =>
+      println(s"found ddocument: ${BSONDocument pretty doc}")
+      println(doc.as[geoDataFromMongo])
+    })
   }
 
   def environmentManager(data : DataInput): Unit ={

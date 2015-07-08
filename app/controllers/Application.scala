@@ -29,6 +29,7 @@ class Application extends Controller {
 				dataBusiness.insertOneStream(data)
 				dataBusiness.environmentManager(data)
 
+
 			})
   		// Send a single 'Hello!' message
   		val out = Enumerator("Ok!")
@@ -37,6 +38,7 @@ class Application extends Controller {
 }
 	def menu = Action { request =>
 		//InputManager.test
+		dataBusiness.findNear(0,0)
 		Ok("blop")
 	}
 
