@@ -1,0 +1,9 @@
+This is your new Play application
+=================================
+
+This file will be packaged with your application, when using `activator dist`.
+
+Create 2D index : db.ground.createIndex({"coordinates":"2d"},{min : -999999999,max : 9999999999})
+Remove 2d index : db.ground.dropIndex({"coordinates":"2d"})
+
+query : db.ground.find({coordinates:{$geoWithin : {$center : [[0,0],150] }}}).count()

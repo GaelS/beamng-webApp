@@ -1,0 +1,40 @@
+package controllers
+
+import play.api._
+import play.api.mvc._
+
+import play.api._
+import play.api.mvc._
+import play.api.Play.current
+import play.api.libs.iteratee.Concurrent
+import play.api.libs.iteratee.Iteratee
+import scala.concurrent.ExecutionContext.Implicits.global
+import play.api.libs.iteratee.Enumerator
+import play.api.libs.json._
+import carControl._
+import models.DataInputFormat.dataformat
+import models.DataInput
+
+class Application extends Controller {
+
+	def socket = WebSocket.using[String] { request =>
+
+  		// Log events to the console
+
+  		val in = Iteratee.foreach[String](s => {
+
+				val e= Json.parse(s)
+				InputManager.discoveryMode((e \ "wheelFL").as[Int],(e \ "wheelFR").as[Int],	(e \ "wheelRL").as[Int],(e \ "wheelRR").as[Int], (e \ "airspeed").as[Double])
+
+			})
+  		// Send a single 'Hello!' message
+  		val out = Enumerator("Ok!")
+
+  (in, out)
+}
+	def menu = Action { request =>
+		//InputManager.test
+		Ok("blop")
+	}
+
+}
