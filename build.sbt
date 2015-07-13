@@ -11,7 +11,8 @@ libraryDependencies ++= Seq(
   cache,
   ws,
   specs2 % Test,
-  "org.reactivemongo" %% "reactivemongo" % "0.11.0"
+  "org.reactivemongo" %% "reactivemongo" % "0.11.0",
+  "com.github.nscala-time" %% "nscala-time" % "2.0.0"
 )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"

@@ -1,11 +1,15 @@
-@(message: String)
+@(positions : String)
 
 @main("Welcome to Play") {
-
+    <div>
     <select>
         <option disabled selected>Selectionnez un mode d'IA</option>
         <option value="1">Découverte</option>
         <option value="2">Course</option>
     </select>
+    </div>
+    <input type="button" id="validate" />
+    <!--Where to draw Map-->
+    <canvas width="3000" height="3000"></canvas>
 
 }
