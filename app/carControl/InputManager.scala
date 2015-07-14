@@ -26,81 +26,30 @@ object InputManager{
   var z = 0
   var cpt = 0
 
-  def carefulMode(data : DataInput): Unit = {
-
-    //Acceleration
-
-
-   // /If left iside in grass, turn right
-  /*if( fr == grass || rr == grass ){
-    robot.keyPress(37)
-  } else if( fl == grass || rl == grass ){
-    robot.keyPress(39)
-  } else if((fr == - 1 && rr == -1 && fl == -1 && rl == -1 && speed  < 0.5)){
-    robot.keyPress(73)
-    robot.keyRelease(73)
-    robot.keyPress(38)
-
-  } else {
-    robot.keyRelease(37)
-    robot.keyRelease(39);
-  }
-    //If right side in grass, turn left
-    // else go straight
-  */
-      val pos : Tuple3[Double,Double,Double] = (data.x,data.y,data.z)
-      val direction :  Tuple3[Double,Double,Double] = (data.dx,data.dy,data.dz)
-      val ray = dataBusiness.findInFrontOfTheCar(pos,direction,50)
-      for {
-        e1 <-  ray._1
-        e2 <-  ray._2
-        e3 <-  ray._3
-        } yield {
-
-        manageWithObstacles(pos,(e1,e2,e3))
+    def inputsFromNeuralNet(values : Seq[Double]): Unit ={
+     if(values(0) > 0.5){
+       robot.keyPress(KeyEvent.VK_UP)
+     } else if(values(0) < 0.5){
+       robot.keyRelease(KeyEvent.VK_UP)
+     }
+      if(values(1) > 0.5){
+        robot.keyPress(KeyEvent.VK_DOWN)
+      } else if(values(1) < 0.5){
+        robot.keyRelease(KeyEvent.VK_DOWN)
       }
-  }
-  def manageWithObstacles(pos :  Tuple3[Double,Double,Double],data : Tuple3[List[geoDataFromMongo],List[geoDataFromMongo],List[geoDataFromMongo]]): Unit ={
-    val listFront = data._1.filter(e => e.obstacle == true);
-    val listLeft = data._2.filter(e => e.obstacle == true);
-    val listRight = data._3.filter(e => e.obstacle == true);
-
-    println("Front : " + listFront.isEmpty + " left : " +listLeft.isEmpty + " right : "+ listRight.isEmpty )
-    if(!listFront.isEmpty && !listLeft.isEmpty && !listRight.isEmpty){
-      //GO BACK
-      val dist = Math.sqrt((listFront(0).x - pos._1) * (listFront(0).x - pos._1) + (listFront(0).y - pos._2) * (listFront(0).y - pos._2))
-      if(dist >= 5){
-        println("obstacle ahead not close! " + dist)
-        robot.keyPress(37)
-        robot.keyPress(38)
-        robot.keyRelease(40)
-      } else if ( dist < 5) {
-        println("obstacle ahead close! "+ dist)
-        robot.keyRelease(37)
-        robot.keyRelease(38)
-        robot.keyRelease(39)
-        robot.keyPress(40)
+      if(values(2) > 0.5) {
+        robot.keyPress(KeyEvent.VK_LEFT)
+      } else if(values(2) < 0.5){
+        robot.keyRelease(KeyEvent.VK_LEFT)
       }
-    } else if(!listFront.isEmpty && !listLeft.isEmpty){
-      //GO RIGHT
-      robot.keyRelease(37)
-      robot.keyPress(38)
-      robot.keyPress(39)
-      println("GO RIGHT !!!!!!::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-    } else if(!listFront.isEmpty && !listRight.isEmpty){
-      //GO LEFT
-      robot.keyRelease(39)
-      robot.keyPress(38)
-      robot.keyPress(37)
-      println("GO LEFT !!!!!!::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-    } else{
-      //No Obstacle, go straight ahead !!
-      robot.keyRelease(37)
-      robot.keyPress(38)
-      robot.keyRelease(39)
-      robot.keyRelease(40)
-    }
-  }
+      if(values(3) > 0.5){
+        robot.keyPress(KeyEvent.VK_RIGHT)
+      }else if(values(3) < 0.5){
+        robot.keyRelease(KeyEvent.VK_RIGHT)
+      }
+      println(values)
+   }
+
   def restart(): Unit ={
     robot.keyPress(73)
     robot.keyRelease(73)

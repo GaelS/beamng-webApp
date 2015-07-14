@@ -18,37 +18,52 @@ import models.DataInputFormat._
 import scala.collection.immutable._
 import Utils.Utils._
 import scala.util.{Try, Success, Failure}
-import com.github.nscala_time.time.Imports._
+import neuralNetwork._
+import genetics._
+
 
 class Application extends Controller {
-	var prevZ = 0.0
-	var prevTime = DateTime.now
-	var velocity = 0.0
+
+	chromosomeManager.instantiatePopulation(50)
+	NeuralNetController.createNet(2,4,Seq(),genetics.chromosomeManager.population(chromosomeManager.currentC))
+	var cpt = 0
+	var timer =0
+	var posInit = Tuple3(0.0,0.0,0.0)
+	var posFinale = Tuple3(0.0,0.0,0.0)
+
 	def socket = WebSocket.using[String] { request =>
 
   		// Log events to the console
-
   		val in = Iteratee.foreach[String](s => {
 				val data = Json.parse(s).as[JsValue].as[models.DataInput]
-				//println(data.wheelFL + " " + data.wheelFR + " " + data.wheelRL + " " + data.wheelRR)
-				val currentTime = DateTime.now
-				velocity = Math.abs((data.z - prevZ) /((currentTime.getMillis - prevTime.getMillis)/100.0))
-				println("velocity " + data.airspeed)
-				prevTime = currentTime
-				prevZ = data.z
-
-				if (data.airspeed < 1) {
-					println("One in DB" + data.wheelFL + " "+data.wheelFR + " " + data.wheelRR + " " + data.wheelRL)
-					dataBusiness.dataCollection(data)
-					InputManager.discoveryMode(data, true)
-				} else {
-					InputManager.discoveryMode(data, false)
+					//dataBusiness.dataCollection(data)
+				if(posInit == (0,0,0)){
+					posInit = (data.x,data.y,data.z)
 				}
-
-			})
+				dataBusiness.getDirection(data) onComplete {
+					case Success(res) => {
+						val out = NeuralNetController.updateNet(Seq(data.airspeed,res))
+						if(data.airspeed < 0.5){
+							cpt = cpt + 1
+						} else {
+							cpt = 0
+						}
+						if(cpt == 100) {
+							cpt = 0
+							println("av "+chromosomeManager.currentC)
+							chromosomeManager.updateFitnessFactor(Utils.Utils.getDistanceT(posFinale,posInit))
+							println("ap " +chromosomeManager.currentC)
+							NeuralNetController.createNet(2,4,Seq(),genetics.chromosomeManager.population(chromosomeManager.currentC))
+							posFinale = (data.x, data.y, data.z)
+							InputManager.restart()
+						}
+						timer = timer +1
+						InputManager.inputsFromNeuralNet(out)
+					}
+				}
+					})
   		// Send a single 'Hello!' message
   		val out = Enumerator("Ok!")
-
   (in, out)
 }
 
@@ -57,6 +72,7 @@ class Application extends Controller {
 		futureRes.map(list => Ok(Json.toJson((list))))
 	}
 	def map = Action { request =>
+		chromosomeManager.instantiatePopulation(10)
 		Ok(views.html.index(""))
 	}
 	def javascriptRoutes = Action{
