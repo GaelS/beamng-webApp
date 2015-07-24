@@ -192,4 +192,10 @@ object InputManager{
     robot.keyPress(KeyEvent.VK_END)
     (1 to 100).foreach(e => {robot.keyPress(KeyEvent.VK_BACK_SPACE);robot.keyRelease(KeyEvent.VK_BACK_SPACE);})
   }
+  def cleanInput(): Unit ={
+    robot.keyRelease(KeyEvent.VK_UP)
+    robot.keyRelease(KeyEvent.VK_DOWN)
+    robot.keyRelease(KeyEvent.VK_LEFT)
+    robot.keyRelease(KeyEvent.VK_RIGHT)
+  }
 }
