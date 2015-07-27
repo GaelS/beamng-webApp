@@ -24,7 +24,7 @@ import genetics._
 
 class Application extends Controller {
 
-	chromosomeManager.instantiatePopulation(5)
+	chromosomeManager.instantiatePopulation(6)
 	NeuralNetController.createNet(5,4,Seq(),genetics.chromosomeManager.population(chromosomeManager.currentC))
 	var cpt = 0
 	var time = 0.0
@@ -55,7 +55,7 @@ class Application extends Controller {
 							InputManager.cleanInput()
 							time = 0
 						}
-						println("av "+chromosomeManager.currentC)
+						//println("av "+chromosomeManager.currentC)
 						time = time+1
 						InputManager.inputsFromNeuralNet(out)
 					})

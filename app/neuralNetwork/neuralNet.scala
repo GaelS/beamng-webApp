@@ -9,7 +9,6 @@ import scala.math.exp
 class NeuralNet(hiddenLayers : Seq[NeuronLayer], outputLayer : NeuronLayer) {
 
   def calculateOutput(inputs : Seq[Double]): Seq[Double] = {
-    println("!!!!!!! " + inputs)
     //initialization outputs (at beginning == inputs)
     var outputs : ListBuffer[Double] = ListBuffer[Double]()
     var outTemp = ListBuffer[Double]()
@@ -34,7 +33,6 @@ class NeuralNet(hiddenLayers : Seq[NeuronLayer], outputLayer : NeuronLayer) {
         outputs = outTemp
       }
     }
-    println(inputs + " || " + outputs)
     outputs.toList
     //GoIn Output Layer
     outputLayer.neurons.foreach{
@@ -43,7 +41,7 @@ class NeuralNet(hiddenLayers : Seq[NeuronLayer], outputLayer : NeuronLayer) {
         val weights = neuron.getWeights()
         var out : Double = 0
         //Go through weights of one layer to calculate output
-        println("weights " + weights )
+        //println("weights " + weights )
         weights.zipWithIndex.foreach{ weight => {
         var input = 0.0
           if(weight._2 == outputs.length){
@@ -52,7 +50,6 @@ class NeuralNet(hiddenLayers : Seq[NeuronLayer], outputLayer : NeuronLayer) {
           out = out + weight._1 *input
         }
         }
-        println("out " +out)
         outTemp.append(sigmoidFunction(out)) //Sigmoid Outputs of each neuron in one layer
       }
     }

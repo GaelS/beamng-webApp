@@ -47,7 +47,7 @@ object InputManager{
       }else if(values(3) < 0.5){
         robot.keyRelease(KeyEvent.VK_RIGHT)
       }
-      println(values)
+      //println(values)
    }
 
   def restart(): Unit ={

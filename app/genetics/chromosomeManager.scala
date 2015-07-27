@@ -10,41 +10,98 @@ import neuralNetwork.NeuralNetController._
 object chromosomeManager {
   var population = Seq[Seq[Double]]()
   private var fitness = scala.collection.mutable.ListBuffer[Double]()
-  var currentC : Int = 0
+  var currentC: Int = 0
+  var currentGeneration: Int = 1
+  private val mutationRate = 0.1 //1/28 //[0.05:2] for real number
 
   //Creation of n chromosome
-  def instantiatePopulation(numChromosome : Int) : Unit =  {
-    var temp = ListBuffer[scala.collection.immutable.Seq[Double]]()
-    (1 to numChromosome).foreach {
-      num => temp.append(Seq.fill(28)(Math.abs(Random.nextInt)/Random.nextInt * Random.nextDouble()))}
-    population = temp.to[scala.collection.immutable.Seq]
+  def instantiatePopulation(numChromosome: Int): Unit = {
+    val r : Random = new Random()
+    val temp = (1 to numChromosome).map {
+      num => Seq.fill(28)((Math.abs(r.nextInt +0.1) / r.nextInt) * Random.nextFloat.toDouble)
+    }
+    population = temp
+    println(population)
   }
 
-  def updateFitnessFactor(value : Double): Unit ={
+  def updateFitnessFactor(value: Double): Unit = {
     fitness.append(value)
-    if(currentC < population.length - 1) {
+    if (currentC < population.length - 1) {
       currentC = currentC + 1
       println("nouveau chrom")
+      println(population.length)
     } else {
       //Time for a new genetics batch
-      println("fin premiere generation")
-      createANewPopulation()
-      Thread.sleep(500000)
+      currentC = 0
+      println("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
+      println("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
+      println("/////////////////////////i//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
+      println("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
+      println("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
+      println("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
+      println("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
+      println("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
+      println("///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
+      println("fin "+currentGeneration+" generation")
+      createANewPopulation
+      currentGeneration = currentGeneration+1
+      fitness.clear
     }
   }
 
-  def createANewPopulation(): Unit ={
+  def createANewPopulation(): Unit = {
     val sumFitnessFactor = fitness.foldLeft(0.0)(_ + _)
-    println(sumFitnessFactor)
-    val fitnessProb = fitness.toSeq.map( factor => {
-      factor/sumFitnessFactor
-    }).sortWith(_ < _)
+    val fitnessProbRogue = fitness.toSeq.map(factor => {
+      factor / sumFitnessFactor
+    }).zipWithIndex.sorted
+
+    val max = fitnessProbRogue(fitnessProbRogue.length - 1)._1
+    val fitnessProb = fitnessProbRogue.map({ e => (e._1 / max, e._2) }) //Get Prob from 0 to 1
     println(fitnessProb)
-    val newPopulation = Seq.fill(population.length)(Random.nextDouble()).foreach({
-          //TODO Create NEW POPULATIOn
-      elt => println(population(fitnessProb.zipWithIndex.filter(elt > _._1).filter(elt < _._1)(0)._2))
+    val e = Seq.fill(population.length)(Random.nextDouble())
+    val newPop = e.map({
+      elt => {
+        val index = fitnessProb.filter(_._1 > elt)(0)._2
+        population(index)
+      }
     })
-    println("blop")
-    println(newPopulation)
+    val finalNewPopulation = crossOver(newPop)
+    val finalPop = mutation(finalNewPopulation)
+    println(newPop.length + " " + finalNewPopulation.length + " " + finalPop.length)
+    population = finalPop
+  }
+
+  def crossOver(pop: Seq[Seq[Double]]): Seq[Seq[Double]] = {
+    var population: Seq[Seq[Double]] = Nil
+    (0 until pop.length - 1 by 2).foreach({
+      index => {
+        val indexCross = Random.nextInt(pop(0).length)
+        val lengthC = pop(0).length
+        val oneElt = pop(index)
+        val secondElt = pop(index + 1)
+        val newSecond: Seq[Double] = secondElt.take(indexCross) ++ oneElt.drop(indexCross)
+        val newFirst: Seq[Double] = oneElt.take(indexCross) ++ secondElt.drop(indexCross)
+        population = population.+:(newFirst)
+        population = population.+:(newSecond)
+      }
+    })
+    println("crossed ")
+    population.foreach(println)
+    population
+  }
+
+  def mutation(pop: Seq[Seq[Double]]): Seq[Seq[Double]] = {
+    //Iterating through one chromosome and check whether it must mutate
+    val finalPop = pop.map(oneC => {
+      oneC.map(oneWeight => {
+        val probOfMutating = Random.nextDouble()
+        if (probOfMutating <= mutationRate) {
+          Math.abs(Random.nextInt) / Random.nextInt * Random.nextDouble
+        } else {
+          oneWeight
+        }
+      })
+    })
+    finalPop
   }
 }
